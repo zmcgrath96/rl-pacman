@@ -2,7 +2,7 @@
 import sys
 
 def main(args):
-    print("main")
+    print('')
 
 if __name__ == '__main__':
 	main(sys.argv[1:])

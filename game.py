@@ -27,11 +27,11 @@ class Game:
         self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.playerPos[0], self.playerPos[1]] = PLAYER
         self.keyPos = self.playerPos
-        while self.keyPos is self.playerPos:
+        while self.keyPos == self.playerPos:
             self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
         self.exitPos = self.playerPos
-        while self.exitPos is self.playerPos or self.exitPos is self.keyPos:
+        while self.exitPos == self.playerPos or self.exitPos == self.keyPos:
             self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.exitPos[0], self.exitPos[1]] = EXIT
         self.isOver = False
@@ -40,21 +40,25 @@ class Game:
 
     
     def renderBoard(self):
+        if self.isOver:
+            print('You have escpaed!')
         shape = self.board.shape
+        board = ''
         for i in range(shape[0]):
             for j in range(shape[1]):
-                print(tileDict[self.board[i,j]], end='')
-            print('')
+                board += tileDict[self.board[i,j]]
+            board += '\n'
+        print(board)
 
     def move(self, direction):
         
         newPos = self.getNewPos(direction)
-        
-        reward = self.deterimineReward(newPos)
 
         if self.isValidMove(newPos):
+            reward = self.deterimineReward(newPos)
             self.updatePlayerPos(newPos)
-        
+        else:
+            reward = NEG_REWARD
         return reward
 
     def getNewPos(self, direction):
@@ -78,11 +82,11 @@ class Game:
         self.board[self.playerPos[0], self.playerPos[1]] = PLAYER        
     
     def deterimineReward(self, pos):
-        if not self.hasKey and self.board[pos[0], pos[1]] is KEY:
+        if not self.hasKey and self.board[pos[0], pos[1]] == KEY:
             self.hasKey = True
             return KEY_REWARD
         
-        if self.hasKey and  self.board[pos[0], pos[1]] is EXIT:
+        if self.hasKey and  self.board[pos[0], pos[1]] == EXIT:
             self.isOver = True
             return EXIT_REWARD
         
@@ -90,6 +94,6 @@ class Game:
 
     def isValidMove(self, newPos):
         pos = self.board[newPos[0], newPos[1]]
-        if pos is WALL or pos is PLAYER:
+        if pos == WALL or pos == PLAYER or (not self.hasKey and pos == EXIT):
             return False
         return True

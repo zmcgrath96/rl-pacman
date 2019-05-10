@@ -1,4 +1,0 @@
-[submodule "pacman-python"]
-	path = pacman-python
-	url = https://github.com/greyblue9/pacman-python.git
-	branch = master

@@ -11,6 +11,10 @@ DOWN = 1
 LEFT = 2
 RIGHT = 3
 
+NEG_REWARD = -1
+KEY_REWARD = 10
+EXIT_REWARD = 20
+
 tileDict = {EMPTY: ' ', WALL: 'W', PLAYER: 'P', EXIT: 'E', KEY: 'K'}
 
 class Game:
@@ -31,6 +35,7 @@ class Game:
             self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.exitPos[0], self.exitPos[1]] = EXIT
         self.isOver = False
+        self.hasKey = False
 
 
     
@@ -42,8 +47,49 @@ class Game:
             print('')
 
     def move(self, direction):
-        pass
+        
+        newPos = self.getNewPos(direction)
+        
+        reward = self.deterimineReward(newPos)
 
+        if self.isValidMove(newPos):
+            self.updatePlayerPos(newPos)
+        
+        return reward
 
-game = Game(10, 20)
-game.renderBoard()
+    def getNewPos(self, direction):
+
+        newPos = self.playerPos
+
+        if direction is UP:
+            newPos = (newPos[0], newPos[1] + 1)
+        elif direction is DOWN:
+            newPos = (newPos[0], newPos[1] - 1)
+        elif direction is LEFT:
+            newPos = (newPos[0] - 1, newPos[1])
+        elif direction is RIGHT:
+            newPos = (newPos[0] + 1, newPos[1])
+
+        return newPos
+    
+    def updatePlayerPos(self, pos):
+        self.board[self.playerPos[0], self.playerPos[1]] = EMPTY
+        self.playerPos = pos
+        self.board[self.playerPos[0], self.playerPos[1]] = PLAYER        
+    
+    def deterimineReward(self, pos):
+        if not self.hasKey and self.board[pos[0], pos[1]] is KEY:
+            self.hasKey = True
+            return KEY_REWARD
+        
+        if self.hasKey and  self.board[pos[0], pos[1]] is EXIT:
+            self.isOver = True
+            return EXIT_REWARD
+        
+        return NEG_REWARD
+
+    def isValidMove(self, newPos):
+        pos = self.board[newPos[0], newPos[1]]
+        if pos is WALL or pos is PLAYER:
+            return False
+        return True

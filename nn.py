@@ -2,7 +2,7 @@ import numpy as np
 from utils import *
 
 class nn:
-	def __init__(self, num_input, num_output, hidden=100, lr, decay_rate):
+	def __init__(self, num_input, num_output, lr, decay_rate, hidden=100):
 		self.w1 = np.random.rand(hidden, num_input) / np.sqrt(num_input)
 		self.w2 = np.random.rand(hidden) / np.sqrt(hidden)
 		self.dw1 = None
@@ -15,7 +15,7 @@ class nn:
 	# forward pass through the data
 	# returns the probablity of doing action and hidden state
 	def forward(self, x):
-		h = np.dot(self.w1, x)
+		h = np.dot(self.w1, np.reshape(x, (x.shape[0] * x.shape[1], 1)))
 		h[h<0] = 0
 		p = sigmoid(np.dot(self.w2, h))
 		return p, h 
@@ -24,7 +24,7 @@ class nn:
 	def backward(self, state, loss):
 		self.dw2 = np.dot(state.T, loss)
 		dh = np.dot(loss, self.w2)
-		dh[<0] = 0
+		dh[dh<0] = 0
 		self.dw1 = np.dot(dh, state)
 		 
 	def update(self):
@@ -36,7 +36,7 @@ class nn:
 		self.rms_error_dw1 = self.decay_rate * self.rms_error_dw1 + (1 - self.decay_rate) * self.dw1**2
 		self.rms_error_dw2 = self.decay_rate * self.rms_error_dw2 + (1 - self.decay_rate) * self.dw2**2
 
-		self.w1 += (lr * self.dw1) / (np.sqrt(self.rms_error_dw1))
-		self.w2 += (lr * self.dw2) / (np.sqrt(self.rms_error_dw2))
+		self.w1 += (self.lr * self.dw1) / (np.sqrt(self.rms_error_dw1))
+		self.w2 += (self.lr * self.dw2) / (np.sqrt(self.rms_error_dw2))
 
 	

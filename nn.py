@@ -3,8 +3,8 @@ from utils import *
 
 class nn:
 	def __init__(self, num_input, num_output, lr, decay_rate, hidden=100):
-		self.w1 = np.random.rand(hidden, num_input)
-		self.w2 = np.random.rand( num_output, hidden) 
+		self.w1 = np.full((hidden, num_input), 1 / (hidden * num_input))
+		self.w2 = np.full((num_output, hidden), 1 / (hidden * num_output))
 		self.dw1 = None
 		self.dw2 = None
 		self.lr =  lr

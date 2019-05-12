@@ -17,12 +17,17 @@ def reward_reduction(rewards, gamma):
 
 	return np.asarray(reduced)
 
+def to_one_hot(n, n_classes, val=1):
+	ret = [0] * n_classes
+	ret[n] = val
+	return np.array(ret)
+
 # ===============================================================================================
 #							END Helper functions 
 # ===============================================================================================
 
 def train():
-	FRAME_DIMS = (30, 30)
+	FRAME_DIMS = (10, 10)
 	hidden = 100		# hidden layers in model
 	lr = .001			# learing rate
 	decay_rate = .99
@@ -41,10 +46,10 @@ def train():
 		print('Game #{}'.format(g))
 		alive = True
 		observations, states, loss_logs, rewards = [], [], [], []
-		while alive:
-			# TODO: SOMETHING WITH FRAME
-			# get the difference between the last frame and the current frame
-			# set the last frame to the current frame
+		num_moves = 0
+		max_moves = 20000
+		while alive and max_moves > num_moves:
+			
 			frame =  env.board
 
 			# action_prob should be of form [up, down, left, right] for pacman
@@ -52,6 +57,7 @@ def train():
 			action_prob, hidden_state = net.forward(frame)
 			explore = float(np.random.randint(1, 100) / 100) <= epsilon
 			action = np.argmax(action_prob) if not explore else np.random.randint(len(action_prob))
+			action = to_one_hot(action, len(action_prob))
 
 			# keep track of observations and states for back propagation
 			observations.append(frame)
@@ -61,18 +67,26 @@ def train():
 			loss_logs.append(action - action_prob[action])
 			
 			# get the reward from the environment
-			rewards.append(env.move(action))
+			a = int(np.argmax(action))
+			r = to_one_hot(a, len(action), env.move(a))
+			rewards.append(r)
 			# see if the game is over
-			alive = env.isOver
+			alive = not env.isOver
+			num_moves += 1
 
 		# reduce and normalize rewards based on time
 		reduced_rewards = reward_reduction(rewards, gamma)
 		reduced_rewards -= np.mean(reduced_rewards)
 		reduced_rewards /= np.std(reduced_rewards)
 
-		loss_logs *= reduced_rewards
+		loss_logs = np.array(loss_logs)
+		loss_logs = np.multiply(loss_logs,reduced_rewards)
 		for i in range(len(observations)):
 			net.backward(observations[i], loss_logs[i])
+
+		epsilon = epsilon if epsilon <= .05 else epsilon * decay_rate
+
+		print('num moves: {}'.format(num_moves))
 
 
 def play(): 

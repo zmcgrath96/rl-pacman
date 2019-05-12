@@ -27,7 +27,8 @@ class nn:
 		self.dw2 = np.dot(d_out, self.h.T)
 		dh = np.dot(self.w2.T, d_out)
 		reshaped_state = np.reshape(state, (state.shape[0] * state.shape[1], 1))
-		self.dw1 = np.dot(np.reshape(dh, (1, dh.shape[0])) * sigmoid_deriv(self.h), reshaped_state)
+		self.dw1 = np.dot(dh * sigmoid_deriv(self.h), reshaped_state.T)
+		# print('dw1.shape: {}, dw2.shape: {}'.format(self.dw1.shape, self.dw2.shape))
 		self.update()
 
 	def update(self):

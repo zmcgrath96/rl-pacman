@@ -31,23 +31,27 @@ def train():
 	hidden = 100		# hidden layers in model
 	lr = .001			# learing rate
 	decay_rate = .99
-	epsilon = .2		# starting value for exploration
+	epsilon = .5		# starting value for exploration
+	reduce_epsilon = .99995
 
 	gamma = .99			# discount factor for reward
-	epochs = 1000		# how many sets of batches to go through
+	epochs = 100		# how many sets of batches to go through
 	num_actions =  4	# number of different actions that can be taken
 
-	# setup the game
-	env = Game(FRAME_DIMS[0], FRAME_DIMS[1])
 	# setup the neural net
 	net = nn(FRAME_DIMS[0] * FRAME_DIMS[1], num_actions, lr, decay_rate, hidden)
 
+	max_moves = 100
+	last_number_moves = 0
+	lowest_num_moves = max_moves
+
 	for g in range(epochs):
-		print('Game #{}'.format(g))
+		# setup the game
+		env = Game(FRAME_DIMS[0], FRAME_DIMS[1])
 		alive = True
 		observations, states, loss_logs, rewards = [], [], [], []
 		num_moves = 0
-		max_moves = 20000
+		p = False
 		while alive and max_moves > num_moves:
 			
 			frame =  env.board
@@ -58,6 +62,10 @@ def train():
 			explore = float(np.random.randint(1, 100) / 100) <= epsilon
 			action = np.argmax(action_prob) if not explore else np.random.randint(len(action_prob))
 			action = to_one_hot(action, len(action_prob))
+			if not p:
+				print(action)
+				print(action_prob)
+				p = True
 
 			# keep track of observations and states for back propagation
 			observations.append(frame)
@@ -84,10 +92,11 @@ def train():
 		for i in range(len(observations)):
 			net.backward(observations[i], loss_logs[i])
 
-		epsilon = epsilon if epsilon <= .05 else epsilon * decay_rate
+		epsilon = epsilon if epsilon <= .05 else epsilon * reduce_epsilon
 
-		print('num moves: {}'.format(num_moves))
-
+		print('Game {} \t Current Record: {} \t Number of moves: {} \t Move delta: {} \t Epsilon: {}'.format(g, lowest_num_moves, num_moves, num_moves - last_number_moves, epsilon))
+		last_number_moves = num_moves
+		lowest_num_moves = min(lowest_num_moves, num_moves)
 
 def play(): 
 	pass

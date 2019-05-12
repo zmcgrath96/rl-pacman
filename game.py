@@ -12,6 +12,7 @@ LEFT = 2
 RIGHT = 3
 
 NEG_REWARD = -1
+ILLEGAL_REWARD = -20
 KEY_REWARD = 100
 EXIT_REWARD = 200
 
@@ -58,7 +59,7 @@ class Game:
             reward = self.deterimineReward(newPos)
             self.updatePlayerPos(newPos)
         else:
-            reward = NEG_REWARD
+            reward = ILLEGAL_REWARD
         return reward
 
     def getNewPos(self, direction):

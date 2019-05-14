@@ -13,7 +13,7 @@ def reward_reduction(rewards, gamma):
 	running_add = 0
 	# increase the rewards for things that happened towards the end of the game
 	for t in range(len(rewards)):
-		running_add =  running_add * gamma + rewards[t]
+		running_add =  np.multiply(running_add, gamma) + rewards[t]
 		reduced[t] = running_add
 
 	return np.asarray(reduced)
@@ -30,29 +30,37 @@ def to_one_hot(n, n_classes, val=1):
 def train():
 	FRAME_DIMS = (10, 10)
 	hidden = 100		# hidden layers in model
-	lr = .001			# learing rate
+	lr = .0001			# learing rate
 	decay_rate = .99
 	epsilon = .2		# starting value for exploration
-	reduce_epsilon = .99995
+	reduce_epsilon = .999992
 
 	gamma = .99			# discount factor for reward
-	epochs = 10000		# how many sets of batches to go through
+	epochs = 400000		# how many sets of batches to go through
 	num_actions =  4	# number of different actions that can be taken
 
 	# setup the neural net
 	net = nn(FRAME_DIMS[0] * FRAME_DIMS[1], num_actions, lr, decay_rate, hidden)
 
-	max_moves = 1000
-	last_number_moves = 0
-	lowest_num_moves = max_moves
+	max_moves = 100000
 
-	for g in range(epochs):
+	win = 0
+	loss = 0
+
+	total_wins = 0
+	total_loss = 0
+
+	decades = []
+	decade = 0
+	g_in_d = 0
+
+	for g in range(1, epochs + 1):
 		# setup the game
 		env = Game(FRAME_DIMS[0], FRAME_DIMS[1])
 		alive = True
 		observations, states, loss_logs, rewards = [], [], [], []
 		num_moves = 0
-		p = False
+		p = True
 		diff_moves = [0] * num_actions
 		while alive and max_moves > num_moves:
 			
@@ -75,16 +83,22 @@ def train():
 			states.append(hidden_state)
 
 			# keep track of 'losses'. its a bit different for RL as the data isn't labeled
-			loss_logs.append(action - action_prob[action])
+			loss_logs.append(action - action_prob)
 			
 			# get the reward from the environment
 			a = int(np.argmax(action))
 			r = to_one_hot(a, len(action), env.move(a))
 			rewards.append(r)
 			# see if the game is over
-			alive = not env.isOver
+			alive = not env.isOver and not env.died
 			num_moves += 1
 
+			if env.died:
+				loss += 1
+				total_loss += 1
+			elif env.isOver:
+				win += 1
+				total_wins += 1
 			# print('move: {}'.format(num_moves))
 			# env.renderBoard()
 			# time.sleep(.1)
@@ -95,15 +109,25 @@ def train():
 		reduced_rewards /= np.std(reduced_rewards)
 
 		loss_logs = np.array(loss_logs)
-		loss_logs = np.multiply(loss_logs,reduced_rewards)
+		loss_logs = np.multiply(loss_logs, reduced_rewards)
 		for i in range(len(observations)):
 			net.backward(observations[i], loss_logs[i])
 
 		epsilon = epsilon if epsilon <= .05 else epsilon * reduce_epsilon
-		print('diff moves {}'.format(diff_moves))
-		print('Game {} \t Current Record: {} \t Number of moves: {} \t Move delta: {} \t Epsilon: {}'.format(g, lowest_num_moves, num_moves, num_moves - last_number_moves, epsilon))
-		last_number_moves = num_moves
-		lowest_num_moves = min(lowest_num_moves, num_moves)
+		g_in_d += 1
+		
+		print('Game {} \t Overall win rate: {:.2f} \t Decade win rate: {:.2f} \t Epsilon: {:.2f} \r'.format(g, round(float(total_wins / g), 4) * 100, round(float(win / g_in_d), 4) * 100  ,epsilon))
+
+		if g % 10000 == 0:
+			decades.append('Decade: {} \t Wins {}, \t losses: {}'.format(decade, win, loss))
+			win = 0
+			loss = 0
+			decade += 1
+			g_in_d = 0
+
+	for d in decades:
+		print(d)
+	print('TOTAL: \t won {} games, lost {} games'.format(win, loss))
 
 def play(): 
 	pass

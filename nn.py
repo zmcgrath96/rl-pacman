@@ -43,4 +43,5 @@ class nn:
 		self.w1 += (self.lr * self.dw1) / (np.sqrt(self.rms_error_dw1))
 		self.w2 += (self.lr * self.dw2) / (np.sqrt(self.rms_error_dw2))
 
+
 	

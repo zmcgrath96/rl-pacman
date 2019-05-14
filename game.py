@@ -63,7 +63,7 @@ class Game:
         else:
             reward = ILLEGAL_REWARD
         
-        return reward * self.numMoves
+        return reward 
 
     def getNewPos(self, direction):
 

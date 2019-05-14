@@ -1,20 +1,20 @@
 import numpy as np
 
-EMPTY = 0
-WALL = 100
-PLAYER = 200
-EXIT = 300
-KEY = 400
+EMPTY = 0.0
+WALL = 0.1
+PLAYER = 0.2
+EXIT = 0.3
+KEY = 0.4
 
 UP = 0
 DOWN = 1
 LEFT = 2
 RIGHT = 3
 
-NEG_REWARD = 0
-ILLEGAL_REWARD = -1
-KEY_REWARD = 1
-EXIT_REWARD = 1
+NEG_REWARD = -1
+ILLEGAL_REWARD = -100
+KEY_REWARD = 70
+EXIT_REWARD = 100
 
 tileDict = {EMPTY: ' ', WALL: 'W', PLAYER: 'P', EXIT: 'E', KEY: 'K'}
 
@@ -25,19 +25,16 @@ class Game:
         self.board[-1, :] = WALL
         self.board[:, 0] = WALL
         self.board[:, -1] = WALL
-        self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
-        self.board[self.playerPos[0], self.playerPos[1]] = PLAYER
-        self.keyPos = self.playerPos
-        while self.keyPos == self.playerPos:
-            self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.keyPos = (np.random.randint(height - 3, height - 1), np.random.randint(width - 3, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
-        self.exitPos = self.playerPos
-        while self.exitPos == self.playerPos or self.exitPos == self.keyPos:
-            self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.exitPos = (np.random.randint(1, 3), np.random.randint(1, 3))
         self.board[self.exitPos[0], self.exitPos[1]] = EXIT
+        self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        while self.playerPos == self.keyPos or self.playerPos == self.exitPos:
+            self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.board[self.playerPos[0], self.playerPos[1]] = PLAYER
         self.isOver = False
         self.hasKey = False
-        self.died = False
 
 
     
@@ -50,38 +47,35 @@ class Game:
             for j in range(shape[1]):
                 board += tileDict[self.board[i,j]]
             board += '\n'
-        print(board)
+        return board
+    
+    def state(self):
+        shape = self.board.shape
+        board = ''
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                board += tileDict[self.board[i,j]]
+        return board
 
     def move(self, direction):
         
         newPos = self.getNewPos(direction)
-
-        if self.isWall(newPos):
-            reward = ILLEGAL_REWARD
-            self.isOver = True
-            self.died = True
-
-        elif self.isValidMove(newPos):
+        if self.isValidMove(newPos):
             reward = self.deterimineReward(newPos)
             self.updatePlayerPos(newPos)
         else:
-            reward = NEG_REWARD
+            reward = ILLEGAL_REWARD
         return reward
 
     def getNewPos(self, direction):
-
-        newPos = self.playerPos
-
-        if direction is UP:
-            newPos = (newPos[0], newPos[1] + 1)
-        elif direction is DOWN:
-            newPos = (newPos[0], newPos[1] - 1)
-        elif direction is LEFT:
-            newPos = (newPos[0] - 1, newPos[1])
-        elif direction is RIGHT:
-            newPos = (newPos[0] + 1, newPos[1])
-
-        return newPos
+        if direction == UP:
+            return (self.playerPos[0] - 1, self.playerPos[1])
+        elif direction == DOWN:
+            return (self.playerPos[0]  + 1 , self.playerPos[1])
+        elif direction == LEFT:
+            return (self.playerPos[0], self.playerPos[1] - 1)
+        elif direction == RIGHT:
+            return (self.playerPos[0], self.playerPos[1] + 1)
     
     def updatePlayerPos(self, pos):
         self.board[self.playerPos[0], self.playerPos[1]] = EMPTY
@@ -104,9 +98,3 @@ class Game:
         if pos == WALL or pos == PLAYER or (not self.hasKey and pos == EXIT):
             return False
         return True
-
-    def isWall(self, newPos):
-        pos = self.board[newPos[0], newPos[1]]
-        if pos == WALL:
-            return True
-        return False

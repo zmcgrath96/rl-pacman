@@ -25,9 +25,11 @@ class Game:
         self.board[-1, :] = WALL
         self.board[:, 0] = WALL
         self.board[:, -1] = WALL
-        self.keyPos = (np.random.randint(height - 3, height - 1), np.random.randint(width - 3, width - 1))
+        self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
-        self.exitPos = (np.random.randint(1, 3), np.random.randint(1, 3))
+        self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        while self.exitPos == self.keyPos:
+            self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.exitPos[0], self.exitPos[1]] = EXIT
         self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         while self.playerPos == self.keyPos or self.playerPos == self.exitPos:

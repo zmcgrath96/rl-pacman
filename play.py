@@ -2,12 +2,15 @@ import sys
 import numpy as np
 from game import Game
 import time
+import pickle
 
 NUM_ACTIONS = 4
 MIN_ALPHA = 0.02
 NUM_EPISODES = 10000
 
 MAX_EPISODE_STEPS = 100
+
+PICKLE_FILE = 'qtable.pickle'
 
 alphas = np.linspace(1.0, MIN_ALPHA, NUM_EPISODES)
 gamma = 1.0
@@ -16,7 +19,7 @@ eps = 0.2
 qTable = dict()
 
 def train():	
-
+	wins = [0] * 1000
 	for episode in range(NUM_EPISODES):
 
 		env = Game(10, 10)
@@ -27,7 +30,6 @@ def train():
 
 		for _ in range(MAX_EPISODE_STEPS):
 			action = chooseAction(state)
-			# print(env.renderBoard())
 			reward = env.move(action)
 			nextState = env.state()
 			done = env.isOver
@@ -35,11 +37,14 @@ def train():
 
 			getQ(state)[action] = getQ(state, action) + alpha * (reward + gamma * np.max(getQ(nextState)) - getQ(state, action))
 			state = nextState
-			# print(getQ(state))
-			# time.sleep(5)
 			if done:
 				break
-		print("Episode {}: total reward -> {}".format(episode + 1, totalReward))
+		if env.isOver:
+			wins.append(1)
+			wins.pop(0)
+		winrate = sum(wins) / 1000
+		print("Episode {}: \t total reward -> {} \t win rate -> {:.2f}".format(episode + 1, totalReward, winrate))
+	pickle.dump(qTable, open(PICKLE_FILE, 'wb'))
 
 def getQ(state, action=None):
 	if state not in qTable:

@@ -1,20 +1,20 @@
 import numpy as np
 
-EMPTY = 0
-WALL = 100
-PLAYER = 200
-EXIT = 300
-KEY = 400
+EMPTY = 0.0
+WALL = 0.1
+PLAYER = 0.2
+EXIT = 0.3
+KEY = 0.4
 
 UP = 0
 DOWN = 1
 LEFT = 2
 RIGHT = 3
 
-NEG_REWARD = 0
-ILLEGAL_REWARD = -1
-KEY_REWARD = 1
-EXIT_REWARD = 1
+NEG_REWARD = -1
+ILLEGAL_REWARD = -10
+KEY_REWARD = 10
+EXIT_REWARD = 100
 
 tileDict = {EMPTY: ' ', WALL: 'W', PLAYER: 'P', EXIT: 'E', KEY: 'K'}
 
@@ -38,6 +38,7 @@ class Game:
         self.isOver = False
         self.hasKey = False
         self.died = False
+        self.numMoves = 0
 
 
     
@@ -53,20 +54,16 @@ class Game:
         print(board)
 
     def move(self, direction):
-        
+        self.numMoves += 1
         newPos = self.getNewPos(direction)
 
-        if self.isWall(newPos):
-            reward = ILLEGAL_REWARD
-            self.isOver = True
-            self.died = True
-
-        elif self.isValidMove(newPos):
+        if self.isValidMove(newPos):
             reward = self.deterimineReward(newPos)
             self.updatePlayerPos(newPos)
         else:
-            reward = NEG_REWARD
-        return reward
+            reward = ILLEGAL_REWARD
+        
+        return reward * self.numMoves
 
     def getNewPos(self, direction):
 
@@ -104,9 +101,3 @@ class Game:
         if pos == WALL or pos == PLAYER or (not self.hasKey and pos == EXIT):
             return False
         return True
-
-    def isWall(self, newPos):
-        pos = self.board[newPos[0], newPos[1]]
-        if pos == WALL:
-            return True
-        return False

@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from utils import process_frame
-from nn import nn
+from nn import NeuralNetwork
 from game import Game
 import time
 
@@ -30,25 +30,25 @@ def to_one_hot(n, n_classes, val=1):
 def train():
 	FRAME_DIMS = (10, 10)
 	hidden = 100		# hidden layers in model
-	lr = .0001			# learing rate
-	decay_rate = .99
 	epsilon = .2		# starting value for exploration
 	reduce_epsilon = .999992
 
-	gamma = .99			# discount factor for reward
 	epochs = 400000		# how many sets of batches to go through
 	num_actions =  4	# number of different actions that can be taken
 
 	# setup the neural net
-	net = nn(FRAME_DIMS[0] * FRAME_DIMS[1], num_actions, lr, decay_rate, hidden)
+	net = NeuralNetwork(FRAME_DIMS[0] * FRAME_DIMS[1], num_actions, hidden)
 
-	max_moves = 100000
+	max_moves = 1000
 
 	win = 0
 	loss = 0
 
 	total_wins = 0
 	total_loss = 0
+
+	last_100_moves = [0] * 100
+	game_index = 0
 
 	decades = []
 	decade = 0
@@ -60,37 +60,23 @@ def train():
 		# setup the game
 		env = Game(FRAME_DIMS[0], FRAME_DIMS[1])
 		alive = True
-		observations, states, loss_logs, rewards = [], [], [], []
 		num_moves = 0
-		p = True
 		diff_moves = [0] * num_actions
 		while alive and max_moves > num_moves:
 			
-			frame =  env.board
+			frame =  np.reshape(env.board, (FRAME_DIMS[0] * FRAME_DIMS[1], 1))
 
 			# action_prob should be of form [up, down, left, right] for pacman
 			# decide if we should explore or if we should take the advice of our network
-			action_prob, hidden_state = net.forward(frame)
+			hidden_state, action_prob = net.forward(frame)
 			explore = float(np.random.randint(1, 100) / 100) <= epsilon
 			action = np.argmax(action_prob) if not explore else np.random.randint(len(action_prob))
 			diff_moves[action] += 1
-			action = to_one_hot(action, len(action_prob))
-			if not p:
-				print(action)
-				print(action_prob)
-				p = True
+			# print(action)
+			reward = env.move(action)
+			reward_arr = np.reshape(to_one_hot(action, num_actions, reward), (num_actions, 1))
+			net.backward(hidden_state, action_prob, frame, reward_arr)
 
-			# keep track of observations and states for back propagation
-			observations.append(frame)
-			states.append(hidden_state)
-
-			# keep track of 'losses'. its a bit different for RL as the data isn't labeled
-			loss_logs.append(action - action_prob)
-			
-			# get the reward from the environment
-			a = int(np.argmax(action))
-			r = to_one_hot(a, len(action), env.move(a))
-			rewards.append(r)
 			# see if the game is over
 			alive = not env.isOver and not env.died
 			num_moves += 1
@@ -101,24 +87,23 @@ def train():
 			elif env.isOver:
 				win += 1
 				total_wins += 1
-			# print('move: {}'.format(num_moves))
+			
 			# env.renderBoard()
-			# time.sleep(.1)
-
-		# reduce and normalize rewards based on time
-		reduced_rewards = reward_reduction(rewards, gamma)
-		reduced_rewards -= np.mean(reduced_rewards)
-		reduced_rewards /= np.std(reduced_rewards)
-
-		loss_logs = np.array(loss_logs)
-		loss_logs = np.multiply(loss_logs, reduced_rewards)
-		for i in range(len(observations)):
-			net.backward(observations[i], loss_logs[i])
+			# time.sleep(0.1)
+		
+		last_100_moves.append(num_moves)
+		last_100_moves.pop(0)
+		if game_index >= 99:
+			game_index = 0
+		else:
+			game_index += 1
+		
+		average_moves = np.sum(np.array(last_100_moves)) / 100.0
 
 		epsilon = epsilon if epsilon <= .05 else epsilon * reduce_epsilon
 		g_in_d += 1
 		
-		print('Game {} \t Overall win rate: {:.2f} \t Decade win rate: {:.2f} \t Epsilon: {:.2f} \r'.format(g, round(float(total_wins / g), 4) * 100, round(float(win / g_in_d), 4) * 100  ,epsilon))
+		print('Game {} \t Overall win rate: {:.2f} \t Decade win rate: {:.2f} \t Epsilon: {:.2f} \t Average Moves: {:.2f}\t\r'.format(g, round(float(total_wins / g), 4) * 100, round(float(win / g_in_d), 4) * 100  ,epsilon, average_moves), end='')
 
 		if g % 10000 == 0:
 			decades.append('Decade: {} \t Wins {}, \t losses: {}'.format(decade, win, loss))

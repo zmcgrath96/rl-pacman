@@ -54,6 +54,8 @@ def train():
 	decade = 0
 	g_in_d = 0
 
+	JUST_SAVE_STAT = True
+
 	for g in range(1, epochs + 1):
 		# setup the game
 		env = Game(FRAME_DIMS[0], FRAME_DIMS[1])
@@ -128,6 +130,12 @@ def train():
 	for d in decades:
 		print(d)
 	print('TOTAL: \t won {} games, lost {} games'.format(win, loss))
+
+	if JUST_SAVE_STAT:
+		with open('stat.txt', 'w') as o:
+			for d in decades:
+				o.write(d)
+			o.write('TOTAL: \t won {} games, lost {} games'.format(win, loss))
 
 def play(): 
 	pass

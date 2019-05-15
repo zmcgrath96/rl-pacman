@@ -72,18 +72,12 @@ def chooseAction(table, state, eps):
 
 def play():
 	
-	# qTable = pickle.load(open(PICKLE_FILE, 'rb'))
-	# env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
-	# print(env.renderBoard())
-	# while not env.isOver:
-	# 	action = chooseAction(qTable, env.state(), 0.01)
-	# 	env.move(action)
-	# 	print(env.renderBoard())
-	# 	time.sleep(0.1)
-	env = Game(10, 10)
+	qTable = pickle.load(open(PICKLE_FILE, 'rb'))
+	env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
 	print(env.renderBoard())
 	while not env.isOver:
-		env.move(np.random.randint(0, 4))
+		action = chooseAction(qTable, env.state(), 0.01)
+		env.move(action)
 		print(env.renderBoard())
 		time.sleep(0.1)
 

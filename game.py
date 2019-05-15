@@ -1,12 +1,12 @@
 import numpy as np
 import math
 
-EMPTY = 0.0
-WALL = 0.1
-PLAYER = 0.2
-EXIT = 0.3
-KEY = 0.4
-ENEMY = .5
+EMPTY = 0
+LAVA = 1
+PLAYER = 2
+EXIT = 3
+KEY = 4
+ENEMY = 5
 
 UP = 0
 DOWN = 1
@@ -19,15 +19,15 @@ KEY_REWARD = 70
 EXIT_REWARD = 100
 KILLED_REWARD = -1000
 
-tileDict = {EMPTY: ' ', WALL: 'W', PLAYER: 'P', EXIT: 'E', KEY: 'K', ENEMY: 'E'}
+tileDict = {EMPTY: ' ', LAVA: 'L', PLAYER: 'P', EXIT: 'X', KEY: 'K', ENEMY: 'E'}
 
 class Game:
     def __init__(self, height, width):
         self.board = np.full((height, width), EMPTY)
-        self.board[0, :] = WALL
-        self.board[-1, :] = WALL
-        self.board[:, 0] = WALL
-        self.board[:, -1] = WALL
+        self.board[0, :] = LAVA
+        self.board[-1, :] = LAVA
+        self.board[:, 0] = LAVA
+        self.board[:, -1] = LAVA
         self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
         self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
@@ -50,8 +50,12 @@ class Game:
 
     
     def renderBoard(self):
-        if self.isOver:
-            print('You have escpaed!')
+        if self.isOver and not self.isDead:
+            return 'You have escpaed!'
+        
+        if self.isDead:
+            return 'You have died!'
+
         shape = self.board.shape
         board = ''
         for i in range(shape[0]):
@@ -92,8 +96,8 @@ class Game:
             self.isDead = True
             self.isOver = True
 
-        # see if the player is running into the wall
-        elif self.isWall(newPos):
+        # see if the player is running into the LAVA
+        elif self.isLAVA(newPos):
             self.isDead = True
             self.isOver = True
             reward = ILLEGAL_REWARD
@@ -137,7 +141,7 @@ class Game:
             self.hasKey = True
             return KEY_REWARD
         
-        if self.hasKey and  self.board[pos[0], pos[1]] == EXIT:
+        if self.hasKey and self.board[pos[0], pos[1]] == EXIT:
             self.isOver = True
             return EXIT_REWARD
         
@@ -146,7 +150,7 @@ class Game:
     def isValidMove(self, newPos, player='E'):
         pos = self.board[newPos[0], newPos[1]]
         if 'E' in player:
-            if pos == ENEMY or self.isWall(newPos):
+            if pos == ENEMY or pos == LAVA or pos == EXIT or pos == KEY:
                 return False
             return True
         else:
@@ -154,8 +158,8 @@ class Game:
                 return False
             return True
     
-    def isWall(self, newPos):
+    def isLAVA(self, newPos):
         pos = self.board[newPos[0], newPos[1]]
-        if pos == WALL:
+        if pos == LAVA:
             return True
         return False

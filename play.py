@@ -39,7 +39,7 @@ def train():
 			action = chooseAction(state)
 			reward = env.move(action)
 			nextState = env.state()
-			done = env.isOver
+			done = env.isOver or env.isDead
 			totalReward += reward
 
 			getQ(state)[action] = getQ(state, action) + alpha * (reward + gamma * np.max(getQ(nextState)) - getQ(state, action))

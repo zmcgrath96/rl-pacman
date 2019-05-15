@@ -37,6 +37,7 @@ class Game:
         self.board[self.playerPos[0], self.playerPos[1]] = PLAYER
         self.isOver = False
         self.hasKey = False
+        self.isDead = False
 
 
     
@@ -62,7 +63,11 @@ class Game:
     def move(self, direction):
         
         newPos = self.getNewPos(direction)
-        if self.isValidMove(newPos):
+        if self.isWall(newPos):
+            self.isDead = True
+            self.isOver = True
+            reward = ILLEGAL_REWARD
+        elif self.isValidMove(newPos):
             reward = self.deterimineReward(newPos)
             self.updatePlayerPos(newPos)
         else:
@@ -97,6 +102,12 @@ class Game:
 
     def isValidMove(self, newPos):
         pos = self.board[newPos[0], newPos[1]]
-        if pos == WALL or pos == PLAYER or (not self.hasKey and pos == EXIT):
+        if pos == PLAYER or (not self.hasKey and pos == EXIT):
             return False
         return True
+    
+    def isWall(self, newPos):
+        pos = self.board[newPos[0], newPos[1]]
+        if pos == WALL:
+            return True
+        return False

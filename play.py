@@ -6,7 +6,9 @@ import pickle
 
 NUM_ACTIONS = 4
 MIN_ALPHA = 0.02
-NUM_EPISODES = 10000
+NUM_EPISODES = 1000000
+SLIDING_WINDOW = 1000
+FRAME_SIZE = (10, 10)
 
 MAX_EPISODE_STEPS = 100
 
@@ -19,10 +21,15 @@ eps = 0.2
 qTable = dict()
 
 def train():	
-	wins = [0] * 1000
-	for episode in range(NUM_EPISODES):
+	wins = [0] * SLIDING_WINDOW
+	winrate = 0.0
+	episode = 0
+	totalRewardArr = [0] * SLIDING_WINDOW
+	avgTotalReward = 0.0
+	
+	while episode < NUM_EPISODES and (avgTotalReward < 100 or winrate < 1.0):
 
-		env = Game(10, 10)
+		env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
 
 		state = env.state()
 		totalReward = 0
@@ -39,11 +46,17 @@ def train():
 			state = nextState
 			if done:
 				break
-		if env.isOver:
+		if env.isOver and not env.isDead:
 			wins.append(1)
-			wins.pop(0)
-		winrate = sum(wins) / 1000
-		print("Episode {}: \t total reward -> {} \t win rate -> {:.2f}".format(episode + 1, totalReward, winrate))
+		else:
+			wins.append(0)
+		wins.pop(0)
+		totalRewardArr.append(totalReward)
+		totalRewardArr.pop(0)
+		episode += 1
+		winrate = sum(wins) / SLIDING_WINDOW
+		avgTotalReward = sum(totalRewardArr) / SLIDING_WINDOW
+		print("Episode {}: \t total reward avg -> {:.2f} \t win rate -> {:.2f} \t qtable size: {}".format(episode + 1, avgTotalReward, winrate, len(qTable)))
 	pickle.dump(qTable, open(PICKLE_FILE, 'wb'))
 
 def getQ(state, action=None):
@@ -59,6 +72,18 @@ def chooseAction(state):
 		return np.random.choice(NUM_ACTIONS)
 	return np.argmax(getQ(state))
 
+def play():
+	env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
+	qTable = pickle.load(open(PICKLE_FILE, 'rb'))
+	
+	while not env.isOver:
+		print(env.renderBoard())
+		action = chooseAction(env.state())
+		env.move(action)
+		time.sleep(0.1)
+
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and '-t' in sys.argv[1]:
 		train()
+	else:
+		play()

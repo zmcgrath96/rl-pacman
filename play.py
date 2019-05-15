@@ -11,8 +11,10 @@ SLIDING_WINDOW = 1000
 FRAME_SIZE = (10, 10)
 
 MAX_EPISODE_STEPS = 100
+time_to_sleep = 2
 
 PICKLE_FILE = 'qtable.pickle'
+SHOW = False
 
 alphas = np.linspace(1.0, MIN_ALPHA, NUM_EPISODES)
 gamma = 1.0
@@ -39,6 +41,10 @@ def train():
 			nextState = env.state()
 			done = env.isOver or env.isDead
 			totalReward += reward
+			if SHOW:
+				board = env.renderBoard()
+				print(board)
+				time.sleep(time_to_sleep)
 
 			getQ(qTable, state)[action] = getQ(qTable, state, action) + alpha * (reward + gamma * np.max(getQ(qTable, nextState)) - getQ(qTable, state, action))
 			state = nextState

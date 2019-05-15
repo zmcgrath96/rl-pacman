@@ -80,14 +80,19 @@ class Game:
         if self.enemyMove:
             d = np.random.randint(0, 4)
             nextEP = self.getNewPos(d, player='E')
+            e_count = 0
             while not self.isValidMove(nextEP, player='E'):
+                # if the enemy is stuck, just don't let it move
+                if e_count > 5: 
+                    break
                 if d == 3:
                     d = 0
                 else:
                     d+= 1
                 nextEP = self.getNewPos(d, player='E')
-            self.updateEnemyPos(nextEP)
-
+                e_count += 1
+            if e_count < 5:
+                self.updateEnemyPos(nextEP)
         self.enemyMove = not self.enemyMove
 
         # see if enemy got the player

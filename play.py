@@ -89,7 +89,7 @@ def test():
 	qTable = pickle.load(open(PICKLE_FILE, 'rb'))
 	wins = 0
 	moves = []
-	for _ in range(1000):
+	for _ in range(10000):
 		env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
 		move = 0
 		while not env.isOver:
@@ -99,7 +99,7 @@ def test():
 		if not env.isDead:
 			wins += 1
 			moves.append(move)
-	print('Win rate: {:.2f} \t avg moves: {:.2f}'.format(wins/1000, sum(moves)/len(moves)))
+	print('Win rate: {:.2f} \t avg moves: {:.2f}'.format(wins/10000, sum(moves)/len(moves)))
 		
 
 if __name__ == '__main__':

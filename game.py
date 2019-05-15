@@ -1,10 +1,10 @@
 import numpy as np
 
-EMPTY = 0.0
-WALL = 0.1
-PLAYER = 0.2
-EXIT = 0.3
-KEY = 0.4
+EMPTY = 0
+WALL = 1
+PLAYER = 2
+EXIT = 3
+KEY = 4
 
 UP = 0
 DOWN = 1
@@ -42,8 +42,12 @@ class Game:
 
     
     def renderBoard(self):
-        if self.isOver:
-            print('You have escpaed!')
+        if self.isOver and not self.isDead:
+            return 'You have escpaed!'
+        
+        if self.isDead:
+            return 'You died in the lava'
+
         shape = self.board.shape
         board = ''
         for i in range(shape[0]):
@@ -94,7 +98,7 @@ class Game:
             self.hasKey = True
             return KEY_REWARD
         
-        if self.hasKey and  self.board[pos[0], pos[1]] == EXIT:
+        if self.hasKey and self.board[pos[0], pos[1]] == EXIT:
             self.isOver = True
             return EXIT_REWARD
         

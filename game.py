@@ -23,23 +23,24 @@ tileDict = {EMPTY: ' ', LAVA: 'L', PLAYER: 'P', EXIT: 'X', KEY: 'K', ENEMY: 'E'}
 
 class Game:
     def __init__(self, height, width):
+        
         self.board = np.full((height + 2, width + 2), EMPTY)
-        self.board[0:1, :] = LAVA
-        self.board[-2:-1, :] = LAVA
-        self.board[:, 0:1] = LAVA
-        self.board[:, -2:-1] = LAVA
-        self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.board[0:2, :] = LAVA
+        self.board[-2:, :] = LAVA
+        self.board[:, 0:2] = LAVA
+        self.board[:, -2:] = LAVA
+        self.keyPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
-        self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.exitPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         while self.exitPos == self.keyPos:
-            self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+            self.exitPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         self.board[self.exitPos[0], self.exitPos[1]] = EXIT
-        self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+        self.playerPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         while self.playerPos == self.keyPos or self.playerPos == self.exitPos:
-            self.playerPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
-        self.enemyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+            self.playerPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
+        self.enemyPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         while self.enemyPos == self.keyPos or self.enemyPos == self.exitPos or self.enemyPos == self.playerPos:
-            self.enemyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
+            self.enemyPos = (np.random.randint(2, height - 2), np.random.randint(2, width - 2))
         self.board[self.playerPos[0], self.playerPos[1]] = PLAYER
         self.board[self.enemyPos[0], self.enemyPos[1]] = ENEMY
         self.isOver = False

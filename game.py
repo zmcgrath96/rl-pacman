@@ -170,7 +170,7 @@ class Game:
         
         return NEG_REWARD
 
-    def isValidMove(self, newPos, player='E'):
+    def isValidMove(self, newPos, player='P'):
         pos = self.board[newPos[0], newPos[1]]
         if 'E' in player:
             if pos == ENEMY or pos == LAVA or pos == EXIT or pos == KEY:

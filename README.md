@@ -59,3 +59,5 @@ In the branch qlearing-enemy, we also toyed with the idea of adding an enemy tha
 1. The enemie's movement was randomly generated. This made the reward for each action flucuate heavily. We attempted to counter this by having the enemy move toawrds the player with a predefined set of rules.
 2. Adding the enemy blew the state space to over 15,000,000. This increased training time drastically. We tried to fix this by limiting the area that the training looked at. Instead of considering the whole board, it considered only the 5x5 grid surrounding the player. While this would reduce the state space, we knew it would also make it harder to find the key and exit since they would not always be visible to the training.
 
+After implementing these changes, we found that the game became to hard for the training to win. This was most likely due to the reduced vision that the training had. There were too many states where the training did not have any idea where the key or exit were to determine which action would produce a higher reward. We feel this resulted in equally likely rewards for all actions making the movemeny essentially random. 
+

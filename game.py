@@ -78,21 +78,32 @@ class Game:
 
         #enemy movement
         if self.enemyMove:
-            d = np.random.randint(0, 4)
-            nextEP = self.getNewPos(d, player='E')
-            e_count = 0
-            while not self.isValidMove(nextEP, player='E'):
-                # if the enemy is stuck, just don't let it move
-                if e_count > 5: 
-                    break
-                if d == 3:
-                    d = 0
-                else:
-                    d+= 1
-                nextEP = self.getNewPos(d, player='E')
-                e_count += 1
-            if e_count < 5:
-                self.updateEnemyPos(nextEP)
+            de_x = abs(self.enemyPos[0] - self.playerPos[0])
+            de_y = abs(self.enemyPos[1] - self.playerPos[1])
+
+            move = [0, 0]
+
+            if self.playerPos[0] > self.enemyPos[0]:
+                move[0] = 1
+            elif self.playerPos[0] < self.enemyPos[0]:
+                move[0] = -1
+            
+            if self.playerPos[1] > self.enemyPos[1]:
+                move[1] = 1
+            elif self.playerPos[1] < self.enemyPos[1]:
+                move[1] = -1
+
+            # move in x direction
+            if de_x > de_y:
+                pos = (move[0], self.enemyPos[1])
+                if self.isValidMove(pos, player='E'):
+                    self.enemyPos = pos
+            # move in y direction
+            else:
+                pos = (self.enemyPos[0], move[1])
+                if self.isValidMove(pos, player='E'):
+                    self.enemyPos = pos
+                
         self.enemyMove = not self.enemyMove
 
         # see if enemy got the player

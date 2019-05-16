@@ -23,11 +23,11 @@ tileDict = {EMPTY: ' ', LAVA: 'L', PLAYER: 'P', EXIT: 'X', KEY: 'K', ENEMY: 'E'}
 
 class Game:
     def __init__(self, height, width):
-        self.board = np.full((height, width), EMPTY)
-        self.board[0, :] = LAVA
-        self.board[-1, :] = LAVA
-        self.board[:, 0] = LAVA
-        self.board[:, -1] = LAVA
+        self.board = np.full((height + 2, width + 2), EMPTY)
+        self.board[0:1, :] = LAVA
+        self.board[-2:-1, :] = LAVA
+        self.board[:, 0:1] = LAVA
+        self.board[:, -2:-1] = LAVA
         self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
         self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
@@ -65,11 +65,11 @@ class Game:
         return board
     
     def state(self):
-        shape = self.board.shape
         board = ''
-        for i in range(shape[0]):
-            for j in range(shape[1]):
+        for i in range(self.playerPos[0] - 2, self.playerPos[0] + 3):
+            for j in range(self.playerPos[1] - 2, self.playerPos[1] + 3):
                 board += tileDict[self.board[i,j]]
+            board+='\n'
         return board
 
     def move(self, direction):

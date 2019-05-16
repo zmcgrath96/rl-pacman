@@ -25,8 +25,7 @@ def train():
 	totalRewardArr = [0] * SLIDING_WINDOW
 	avgTotalReward = 0.0
 	qTable = dict()
-	prevTableSize = len(qTable)
-	while episode < NUM_EPISODES and (avgTotalReward < 145 or winrate < 0.999):
+	while episode < NUM_EPISODES and winrate < 0.999:
 
 		env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
 
@@ -53,9 +52,8 @@ def train():
 		totalRewardArr.append(totalReward)
 		totalRewardArr.pop(0)
 		episode += 1
-		if eps > 0.01 and episode % 50 == 0 and len(qTable) - prevTableSize == 0:
-			eps -= eps * 0.001
-			prevTableSize = len(qTable)
+		if eps > 0.01 and 1.0 - winrate < eps:
+			eps -= eps * 0.0001
 		winrate = sum(wins) / SLIDING_WINDOW
 		avgTotalReward = sum(totalRewardArr) / SLIDING_WINDOW
 		print("Episode {}: \t total reward avg -> {:.2f} \t win rate -> {:.2f} \t qtable size -> {} \t eps -> {:.2f}".format(episode + 1, avgTotalReward, winrate, len(qTable), eps), end='\r')
@@ -89,7 +87,7 @@ def test():
 	qTable = pickle.load(open(PICKLE_FILE, 'rb'))
 	wins = 0
 	moves = []
-	for _ in range(10000):
+	for _ in range(1000):
 		env = Game(FRAME_SIZE[0], FRAME_SIZE[1])
 		move = 0
 		while not env.isOver:
@@ -99,7 +97,7 @@ def test():
 		if not env.isDead:
 			wins += 1
 			moves.append(move)
-	print('Win rate: {:.2f} \t avg moves: {:.2f}'.format(wins/10000, sum(moves)/len(moves)))
+	print('Win rate: {:.2f} \t avg moves: {:.2f}'.format(wins/1000, sum(moves)/len(moves)))
 		
 
 if __name__ == '__main__':

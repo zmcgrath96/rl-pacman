@@ -1,7 +1,7 @@
 import numpy as np
 
 EMPTY = 0
-WALL = 1
+LAVA = 1
 PLAYER = 2
 EXIT = 3
 KEY = 4
@@ -16,15 +16,15 @@ ILLEGAL_REWARD = -100
 KEY_REWARD = 70
 EXIT_REWARD = 100
 
-tileDict = {EMPTY: ' ', WALL: 'W', PLAYER: 'P', EXIT: 'E', KEY: 'K'}
+tileDict = {EMPTY: ' ', LAVA: 'L', PLAYER: 'P', EXIT: 'E', KEY: 'K'}
 
 class Game:
     def __init__(self, height, width):
         self.board = np.full((height, width), EMPTY)
-        self.board[0, :] = WALL
-        self.board[-1, :] = WALL
-        self.board[:, 0] = WALL
-        self.board[:, -1] = WALL
+        self.board[0, :] = LAVA
+        self.board[-1, :] = LAVA
+        self.board[:, 0] = LAVA
+        self.board[:, -1] = LAVA
         self.keyPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
         self.board[self.keyPos[0], self.keyPos[1]] = KEY
         self.exitPos = (np.random.randint(1, height - 1), np.random.randint(1, width - 1))
@@ -67,7 +67,7 @@ class Game:
     def move(self, direction):
         
         newPos = self.getNewPos(direction)
-        if self.isWall(newPos):
+        if self.isLAVA(newPos):
             self.isDead = True
             self.isOver = True
             reward = ILLEGAL_REWARD
@@ -110,8 +110,8 @@ class Game:
             return False
         return True
     
-    def isWall(self, newPos):
+    def isLAVA(self, newPos):
         pos = self.board[newPos[0], newPos[1]]
-        if pos == WALL:
+        if pos == LAVA:
             return True
         return False

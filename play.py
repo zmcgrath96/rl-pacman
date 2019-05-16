@@ -14,7 +14,7 @@ MAX_EPISODE_STEPS = 100
 time_to_sleep = 2
 
 PICKLE_FILE = 'qtable.pickle'
-SHOW = False
+SHOW = True
 
 alphas = np.linspace(1.0, MIN_ALPHA, NUM_EPISODES)
 gamma = 1.0

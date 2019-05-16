@@ -84,31 +84,37 @@ class Game:
 
             move = [0, 0]
 
-            if self.playerPos[0] > self.enemyPos[0]:
+            if self.playerPos[0] >= self.enemyPos[0]:
                 move[0] = 1
-            elif self.playerPos[0] < self.enemyPos[0]:
+            elif self.playerPos[0] <= self.enemyPos[0]:
                 move[0] = -1
             
-            if self.playerPos[1] > self.enemyPos[1]:
+            if self.playerPos[1] >= self.enemyPos[1]:
                 move[1] = 1
-            elif self.playerPos[1] < self.enemyPos[1]:
+            elif self.playerPos[1] <= self.enemyPos[1]:
                 move[1] = -1
 
             # move in x direction
             if de_x > de_y:
-                pos = (move[0], self.enemyPos[1])
+                pos = (move[0] + self.enemyPos[0], self.enemyPos[1])
                 if self.isValidMove(pos, player='E'):
-                    self.enemyPos = pos
+                    self.updateEnemyPos(pos)
             # move in y direction
             else:
-                pos = (self.enemyPos[0], move[1])
+                pos = (self.enemyPos[0], move[1] + self.enemyPos[1])
                 if self.isValidMove(pos, player='E'):
-                    self.enemyPos = pos
+                    self.updateEnemyPos(pos)
                 
         self.enemyMove = not self.enemyMove
 
         # see if enemy got the player
         if self.enemyPos and self.enemyPos == self.playerPos:
+            reward = KILLED_REWARD
+            self.isDead = True
+            self.isOver = True
+
+        # see if the player is running into the enemy
+        elif self.isEnemy(newPos):
             reward = KILLED_REWARD
             self.isDead = True
             self.isOver = True
@@ -178,5 +184,11 @@ class Game:
     def isLAVA(self, newPos):
         pos = self.board[newPos[0], newPos[1]]
         if pos == LAVA:
+            return True
+        return False
+
+    def isEnemy(self, newPos):
+        pos = self.board[newPos[0], newPos[1]]
+        if pos == ENEMY:
             return True
         return False

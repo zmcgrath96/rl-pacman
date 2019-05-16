@@ -14,7 +14,7 @@ MAX_EPISODE_STEPS = 100
 time_to_sleep = 2
 
 PICKLE_FILE = 'qtable.pickle'
-SHOW = True
+SHOW = False
 
 alphas = np.linspace(1.0, MIN_ALPHA, NUM_EPISODES)
 gamma = 1.0
@@ -59,6 +59,8 @@ def train():
 		totalRewardArr.pop(0)
 		episode += 1
 		winrate = sum(wins) / SLIDING_WINDOW
+		if eps > 0.01:
+			eps -= eps * 0.00001
 		avgTotalReward = sum(totalRewardArr) / SLIDING_WINDOW
 		print("Episode {}: \t total reward avg -> {:.2f} \t win rate -> {:.2f} \t qtable size -> {} \t eps -> {:.2f}".format(episode + 1, avgTotalReward, winrate, len(qTable), eps), end='\r')
 	pickle.dump(qTable, open(PICKLE_FILE, 'wb'))

@@ -15,8 +15,8 @@ RIGHT = 3
 
 NEG_REWARD = -1
 ILLEGAL_REWARD = -100
-KEY_REWARD = 70
-EXIT_REWARD = 100
+KEY_REWARD = 700
+EXIT_REWARD = 1000
 KILLED_REWARD = -1000
 
 tileDict = {EMPTY: ' ', LAVA: 'L', PLAYER: 'P', EXIT: 'X', KEY: 'K', ENEMY: 'E'}
@@ -47,7 +47,7 @@ class Game:
         self.hasKey = False
         self.isDead = False
         self.numEnemies  = math.ceil(height * width / 100)
-        self.enemyMove = True
+        self.enemyMove = 0
 
     
     def renderBoard(self):
@@ -70,15 +70,15 @@ class Game:
         for i in range(self.playerPos[0] - 2, self.playerPos[0] + 3):
             for j in range(self.playerPos[1] - 2, self.playerPos[1] + 3):
                 board += tileDict[self.board[i,j]]
-            board+='\n'
         return board
 
     def move(self, direction):
         # player movement
         newPos = self.getNewPos(direction)
-
-        #enemy movement
-        if self.enemyMove:
+        self.enemyMove += 1
+        #enemy movement 
+        if self.enemyMove > 2:
+            self.enemyMove = 0
             de_x = abs(self.enemyPos[0] - self.playerPos[0])
             de_y = abs(self.enemyPos[1] - self.playerPos[1])
 
